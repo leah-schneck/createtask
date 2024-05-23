@@ -1,0 +1,153 @@
+var xloc = 130;
+var yloc = 330;
+var lives = 3;
+var scoop;
+var yval = 280;
+var count = 0;
+var ylocs;
+var xlocs;
+
+var check = [false, false, false, false, false, false, false, false];
+
+function constrain(input, low, high){
+  var output;
+  if (input < low) {
+    output = low;
+  } else if (input > high) {
+    output = high;
+  } else {
+    output = input;
+  }
+  return output;
+}
+
+function checkScore() {
+  //console.log("score checked");
+  if (lives == 0){
+    setScreen("loseScreen");
+  }
+  if (yval <= 60) {
+    setScreen("winScreen");
+  }
+}
+
+function moveCone(){
+  setPosition("coneImg", xloc, yloc);
+  xloc = constrain(xloc, 0, 262);
+}
+
+function moveScoop() {
+  var yloczero = getYPosition("scoop_0");
+  var ylocone = getYPosition("scoop_1");
+  var yloctwo = getYPosition("scoop_2");
+  var ylocthree = getYPosition("scoop_3");
+  var ylocfour = getYPosition("scoop_4");
+  var ylocfive = getYPosition("scoop_5");
+  var ylocsix = getYPosition("scoop_6");
+  var ylocseven = getYPosition("scoop_7");
+  if (check[0] == true){
+    setPosition("scoop_0", xloc, yloczero);
+  }
+  if (check[1]  == true){
+    setPosition("scoop_1", xloc, ylocone);
+  }
+  if (check[2]  == true){
+    setPosition("scoop_2", xloc, yloctwo);
+  }
+  if (check[3]  == true){
+    setPosition("scoop_3", xloc, ylocthree);
+  }
+  if (check[4]  == true){
+    setPosition("scoop_4", xloc, ylocfour);
+  }
+  if (check[5]  == true){
+    setPosition("scoop_5", xloc, ylocfive);
+  }
+  if (check[6]  == true){
+    setPosition("scoop_6", xloc, ylocsix);
+  }
+  if (check[7]  == true){
+    setPosition("scoop_7", xloc, ylocseven);
+  }
+}
+
+function updateScoop() {
+  for (var i = 0; i < 7; i++) {
+    if (check[i] == true) {
+      continue;
+    }
+    scoop = "scoop_" + i;
+    if (!getProperty(scoop, "hidden")) {
+    xlocs = getXPosition(scoop);
+    ylocs = getYPosition(scoop);
+      if (ylocs < yval) {
+      setPosition(scoop, xlocs, ylocs + 20);
+      } else {
+        checkScoop(i);
+        checkScore();
+      }
+    }
+  }
+  showElement("scoop_" + Math.round(count/7));
+  if (count < 49){
+   count++;
+  }
+  setTimeout(updateScoop, 1000);
+}
+
+function checkScoop(i) {
+  var cxloc = getXPosition("coneImg");
+  xlocs = getXPosition(scoop);
+  ylocs = getYPosition(scoop);
+  if  ((ylocs >= yval&&(ylocs <= yval+30))&&((cxloc >= xlocs-20)&&(cxloc <= xlocs+20))){
+    playSound("sound://category_pop/deep_bubble_notification.mp3");
+    console.log("caught scoop " + i);
+    yval = yval - 40;
+    check[i] = true;
+    } else {
+      playSound("sound://category_swish/deep_fast_swish.mp3");
+      console.log("missed scoop " + i);
+      hideElement("scoop_" + i);
+      lives--;
+      setText("number_lives", lives);
+    }
+}
+
+function reset () {
+  setScreen("homeScreen");
+  lives = 3;
+  yval = 280;
+  xloc = 130;
+  yloc = 330;
+  count = 0;
+  check = [false, false, false, false, false, false, false, false];
+}
+
+onEvent("beginBtn", "click", function( ) {
+  setScreen("playScreen");
+  setText("number_lives", lives);
+  setTimeout(updateScoop, 1000);
+});
+
+onEvent("playScreen", "keydown", function(event) {
+  if (event.key == "Left") {
+    xloc = xloc - 10;
+    moveCone();
+    moveScoop();
+  } else if (event.key == "Right") {
+    xloc = xloc + 10;
+    moveCone();
+    moveScoop();
+  }
+});
+
+onEvent("againBtn", "click", function( ) {
+  reset();
+});
+
+onEvent("again2Btn", "click", function( ) {
+  reset();
+});
+
+
+
